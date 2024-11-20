@@ -1,0 +1,112 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import deque
+import time
+
+def create_maze():
+    maze = np.array([ 
+        [0, 1, 0, 0, 0, 1, 0], 
+        [0, 1, 0, 1, 0, 1, 0], 
+        [0, 0, 0, 1, 0, 0, 0], 
+        [0, 1, 1, 1, 1, 1, 0], 
+        [0, 0, 0, 0, 0, 1, 0] 
+    ])
+    start = (0, 0)   # Top-left corner 
+    goal = (4, 6)    # Bottom-right corner 
+    return maze, start, goal
+
+def display_maze(maze, path=[]):
+    maze_copy = np.copy(maze)
+    for position in path:
+        maze_copy[position] = 2  # Path marked with '2'
+        
+    plt.imshow(maze_copy, cmap="coolwarm")
+    plt.xticks([]), plt.yticks([])
+    plt.show()
+def bfs(maze, start, goal):
+    queue = deque([start])
+    visited = set()
+    visited.add(start)
+    parent_map = {}
+    
+    while queue:
+        node = queue.popleft()
+        
+        if node == goal:
+            break
+        
+        for direction in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            neighbor = (node[0] + direction[0], node[1] + direction[1])
+            
+            if (0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1] and 
+                neighbor not in visited and maze[neighbor] == 0):
+                
+                visited.add(neighbor)
+                parent_map[neighbor] = node
+                queue.append(neighbor)
+    
+    path = []
+    if goal in parent_map:
+        while goal != start:
+            path.append(goal)
+            goal = parent_map[goal]
+        path.append(start)
+        path.reverse()
+    
+    return path
+def dfs(maze, start, goal):
+    stack = [start]
+    visited = set()
+    visited.add(start)
+    parent_map = {}
+    
+    while stack:
+        node = stack.pop()
+        
+        if node == goal:
+            break
+        
+        for direction in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            neighbor = (node[0] + direction[0], node[1] + direction[1])
+            
+            if (0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1] and 
+                neighbor not in visited and maze[neighbor] == 0):
+                
+                visited.add(neighbor)
+                parent_map[neighbor] = node
+                stack.append(neighbor)
+    
+    path = []
+    if goal in parent_map:
+        while goal != start:
+            path.append(goal)
+            goal = parent_map[goal]
+        path.append(start)
+        path.reverse()
+    
+    return path
+def analyze_performance(algorithm, maze, start, goal):
+    start_time = time.time()
+    path = algorithm(maze, start, goal)
+    end_time = time.time()
+    
+    execution_time = end_time - start_time
+    space_complexity = len(path)
+    
+    return path, execution_time, space_complexity
+  
+maze, start, goal = create_maze()
+
+# BFS
+bfs_path, bfs_time, bfs_space = analyze_performance(bfs, maze, start, goal)
+print("BFS Path:", bfs_path)
+print("BFS Time:", bfs_time)
+print("BFS Space Complexity:", bfs_space)
+display_maze(maze, bfs_path)
+
+# DFS
+dfs_path, dfs_time, dfs_space = analyze_performance(dfs, maze, start, goal)
+print("DFS Path:", dfs_path)
+print("DFS Time:", dfs_time)
+print("DFS Space Complexity:", dfs_space)
+display_maze(maze, dfs_path)
