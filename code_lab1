@@ -1,0 +1,86 @@
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+
+# Initial state of the smart home devices
+smart_home = {
+    "lights": "off",
+    "thermostat": 22,  # in Celsius
+    "door_lock": "unlocked",
+    "time_of_day": "morning",
+    "presence": False  # True if someone is home, False if not
+}
+# Function to visualize the smart home state
+def visualize_state_grid(home_state, title="Smart Home State"):
+    # Set up the plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.set_xlim(0, 3)
+    ax.set_ylim(0, len(home_state))
+    ax.set_title(title, fontsize=16, fontweight="bold")
+    ax.axis("off")
+
+    # Define colors for different states
+    color_map = {
+        "on": "green",
+        "off": "yellow",
+        "locked": "green",
+        "unlocked": "yellow",
+        True: "green",
+        False: "yellow",
+        "morning": "aqua",
+        "evening": "aqua",
+    }
+
+    # Loop through devices and their states
+    for i, (device, state) in enumerate(home_state.items()):
+        # Get the color for the state
+        color = color_map.get(state, "green")
+        
+        # Add a rectangle to represent the state
+        rect = Rectangle((0.5, i), 2, 1, color=color, edgecolor="black")
+        ax.add_patch(rect)
+        
+        # Add device name
+        ax.text(1, i + 0.5, device.capitalize(), va="center", ha="center",
+                fontweight="bold", color="black")
+        
+        # Add state text
+        ax.text(2, i + 0.5, str(state), va="center", ha="center",
+                fontweight="bold", color="black")
+    
+    # Show the plot
+    plt.show()
+
+  # Simulate the smart home environment
+print("Before Applying Rules:")
+visualize_state_grid(smart_home, title="Smart Home State: Before Rules")
+
+# Function to apply automation rules
+def apply_rules(home):
+    # Rule 1: Turn on lights in the evening if someone is home
+    if home["time_of_day"] == "evening" and home["presence"]:
+        home["lights"] = "on"
+
+    # Rule 2: Adjust thermostat if it's cold and someone is home
+    if home["thermostat"] < 20 and home["presence"]:
+        home["thermostat"] = 22
+
+    # Rule 3: Lock doors if no one is home
+    if not home["presence"]:
+        home["door_lock"] = "locked"
+
+    # Rule 4: Set morning thermostat if someone is home
+    if home["time_of_day"] == "morning" and home["presence"]:
+        home["thermostat"] = 20
+
+    return home
+
+#update smart home coditions for testing
+smart_home["time_of_day"]="evening"
+smart_home["presence"]=True
+smart_home["thermostat"]=18
+
+# Apply automation rules to the smart home
+smart_home = apply_rules(smart_home)
+
+print("After Applying Rules:")
+visualize_state_grid(smart_home, title="Smart Home State: After Rules")
